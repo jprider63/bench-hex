@@ -51,7 +51,7 @@ hexNaive x
 
 hexBranchQuick :: Word8 -> Word8
 hexBranchQuick x
-  | num < 10 = x
+  | num < 10 = num
   | alpha < 6 = alpha + 10
   | otherwise = 255
   where
@@ -61,15 +61,16 @@ hexBranchQuick x
 hexBranchFree :: Word8 -> Word8
 hexBranchFree (W8# w#) =
   let num# = word2Int# w# -# 0x30#
-      isNum# = num# <# 10#
+      isNum# = ltWord# (int2Word# num#) (int2Word# 10#)
       alpha# = (andI# 0xdf# (word2Int# w#)) -# 0x41#
-      isAlpha# = alpha# <# 6#
-  in W8#
+      isAlpha# = ltWord# (int2Word# alpha#) (int2Word# 6#)
+  in
+   W8#
     (narrow8Word# (int2Word# (orI#
       (orI#
         (isNum# *# num#)
         (isAlpha# *# (10# +# alpha#)))
       ((orI# isAlpha# isNum#) -# 1#))))
   where
-    x# *# y# = andI# (uncheckedIShiftL# x# 4# -# 1#) y#
+    x# *# y# = andI# (negateInt# x#) y#
 {-# INLINE hexBranchFree #-}
