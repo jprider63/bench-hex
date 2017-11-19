@@ -1,7 +1,14 @@
+{-# LANGUAGE MagicHash #-}
+
 module Lib where
 
+import Data.Bits
 import Data.Word
+import GHC.Prim
+import GHC.Word
 
+-- http://tab.snarc.org/posts/haskell/2011-11-15-lookup-tables.html
+--
 -- hexNaive :: Word8 -> Word16
 -- hexNaive c
 --   | c >= '0' && c <= '9' = fromEnum c - fromEnum '0'
@@ -9,7 +16,7 @@ import Data.Word
 --   | c >= 'a' && c <= 'f' = fromEnum c - fromEnum 'a'
 --   | otherwise            = 0xff
 
-
+{-# INLINE hexMatching #-}
 hexMatching :: Word8 -> Word8
 hexMatching 48  = 0  -- '0'
 hexMatching 49  = 1  -- '1'
@@ -37,8 +44,32 @@ hexMatching _ = 255
 
 hexNaive :: Word8 -> Word8
 hexNaive x
-  | 48 <= x && x <=  57 = fromIntegral x - 48  -- 0-9
-  | 65 <= x && x <=  70 = fromIntegral x - 55  -- A-F
-  | 97 <= x && x <= 102 = fromIntegral x - 87  -- a-f
+  | 48 <= x && x <=  57 = x - 48  -- 0-9
+  | 65 <= x && x <=  70 = x - 55  -- A-F
+  | 97 <= x && x <= 102 = x - 87  -- a-f
   | otherwise = 255
 
+hexBranchQuick :: Word8 -> Word8
+hexBranchQuick x
+  | num < 10 = x
+  | alpha < 6 = alpha + 10
+  | otherwise = 255
+  where
+    num = x - 48
+    alpha = (x .&. 0xdf) - 65
+
+hexBranchFree :: Word8 -> Word8
+hexBranchFree (W8# w#) =
+  let num# = word2Int# w# -# 0x30#
+      isNum# = num# <# 10#
+      alpha# = (andI# 0xdf# (word2Int# w#)) -# 0x41#
+      isAlpha# = alpha# <# 6#
+  in W8#
+    (narrow8Word# (int2Word# (orI#
+      (orI#
+        (isNum# *# num#)
+        (isAlpha# *# (10# +# alpha#)))
+      ((orI# isAlpha# isNum#) -# 1#))))
+  where
+    x# *# y# = andI# (uncheckedIShiftL# x# 4# -# 1#) y#
+{-# INLINE hexBranchFree #-}
