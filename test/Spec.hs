@@ -24,6 +24,7 @@ fs =
   , ("sub"     , process hexNaive)
   , ("bq"      , process hexBranchQuick)
   , ("bf"      , process hexBranchFree)
+  , ("unsafevec" , process hexUnsafeVector)
   ]
 
 mkBench name x = bgroup name
