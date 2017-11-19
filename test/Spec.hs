@@ -12,21 +12,23 @@ import Data.List (foldl')
 dataList, dataList2 :: [Word8]
 dataList = take 100000 $ cycle [0 .. 255] -- ['\x1'..'\xf0']
 dataList2 = take 100000 $ cycle $ BS.unpack "D34dBe3F"
+dataList3 = take 100000 $ cycle $ [48 .. 102]
 process hexF = foldl' (\acc c -> acc + hexF c) 0
 
-main = defaultMain [
-          bgroup "dataList"
-                [ bench "baseline" $ whnf (process id) dataList
-                , bench "match" $ whnf (process hexMatching) dataList
-                , bench "sub" $ whnf (process hexNaive) dataList
-                , bench "bq" $ whnf (process hexBranchQuick) dataList
-                , bench "bf" $ whnf (process hexBranchFree) dataList
-                ]
-        , bgroup "dataList2"
-                [ bench "baseline" $ whnf (process id) dataList2
-                , bench "match" $ whnf (process hexMatching) dataList2
-                , bench "sub" $ whnf (process hexNaive) dataList2
-                , bench "bq" $ whnf (process hexBranchQuick) dataList2
-                , bench "bf" $ whnf (process hexBranchFree) dataList2
-                ]
+fs =
+  [ ("baseline", process id)
+  , ("match"   , process hexMatching)
+  , ("sub"     , process hexNaive)
+  , ("bq"      , process hexBranchQuick)
+  , ("bf"      , process hexBranchFree)
+  ]
+
+mkBench name x = bgroup name
+  [ bench fname $ whnf f x | (fname, f) <- fs]
+
+
+main = defaultMain
+        [ mkBench "dataList" dataList
+        , mkBench "dataList2" dataList2
+        , mkBench "dataList3" dataList3
         ]
