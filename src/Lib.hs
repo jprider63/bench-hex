@@ -62,18 +62,18 @@ hexBranchQuick x
 vtable = V.fromList table
 
 hexUnsafeVector :: Word8 -> Word8
-hexUnsafeVector c = let w = vtable `V.unsafeIndex` fromIntegral c in if w == 0xff then error ("bad: " ++ show c) else w
+hexUnsafeVector c = maybe (error "bad") id $ vtable `V.unsafeIndex` fromIntegral c
 
-__ = 0xff
-table :: [Word8]
+__ = Nothing
+table :: [Maybe Word8]
 table = [
         __,__,__,__,__,__,__,__, __,__,__,__,__,__,__,__,
         __,__,__,__,__,__,__,__, __,__,__,__,__,__,__,__,
         __,__,__,__,__,__,__,__, __,__,__,__,__,__,__,__,
-         0, 1, 2, 3, 4, 5, 6, 7,  8, 9,__,__,__,__,__,__,
-        __,10,11,12,13,14,15,__, __,__,__,__,__,__,__,__,
+        Just 0, Just 1, Just 2, Just 3, Just 4, Just 5, Just 6, Just 7, Just 8, Just 9,__,__,__,__,__,__,
+        __,Just 10, Just 11, Just 12, Just 13, Just 14, Just 15,__, __,__,__,__,__,__,__,__,
         __,__,__,__,__,__,__,__, __,__,__,__,__,__,__,__,
-        __,10,11,12,13,14,15,__, __,__,__,__,__,__,__,__,
+        __,Just 10,Just 11,Just 12,Just 13,Just 14,Just 15,__, __,__,__,__,__,__,__,__,
         __,__,__,__,__,__,__,__, __,__,__,__,__,__,__,__,
 
         __,__,__,__,__,__,__,__, __,__,__,__,__,__,__,__,
