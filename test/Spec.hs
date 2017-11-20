@@ -14,6 +14,8 @@ dataList = take 100000 $ cycle [0 .. 255] -- ['\x1'..'\xf0']
 dataList2 = take 100000 $ cycle $ BS.unpack "D34dBe3F"
 dataList3 = take 100000 $ cycle $ [48 .. 102]
 dataList4 = replicate 100000 0
+dataList5 = take 100000 $ cycle $ BS.unpack "03a9aBCdEfFa"
+dataList6 = take 100000 $ cycle $ [48 .. 57] ++ [65 .. 70] ++ [97 .. 102]
 
 process :: (a -> Word8) -> [a] -> Word8
 process hexF = foldl' (\acc c -> acc + hexF c) 0
@@ -30,17 +32,19 @@ fs =
 mkBench name x = bgroup name
   [ bench fname $ whnf f x | (fname, f) <- fs]
 
-sanityCheck =
-  let results = (fmap . fmap) (\f -> f dataList) (drop 1 fs)
-  in if length (nub (fmap snd results)) /= 1 then
-    fail (show results)
-  else return ()
+-- sanityCheck =
+--   let results = (fmap . fmap) (\f -> f dataList) (drop 1 fs)
+--   in if length (nub (fmap snd results)) /= 1 then
+--     fail (show results)
+--   else return ()
 
 main = do
-  sanityCheck
+  -- sanityCheck
   defaultMain
-    [ mkBench "dataList" dataList
-    , mkBench "dataList2" dataList2
-    , mkBench "dataList3" dataList3
-    , mkBench "dataList4" dataList4
+    -- [ mkBench "dataList" dataList
+    [ mkBench "dataList2" dataList2
+    -- , mkBench "dataList3" dataList3
+    -- , mkBench "dataList4" dataList4
+    , mkBench "dataList5" dataList5
+    , mkBench "dataList6" dataList6
     ]

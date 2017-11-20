@@ -62,7 +62,7 @@ hexBranchQuick x
 vtable = V.fromList table
 
 hexUnsafeVector :: Word8 -> Word8
-hexUnsafeVector c = vtable `V.unsafeIndex` fromIntegral c
+hexUnsafeVector c = let w = vtable `V.unsafeIndex` fromIntegral c in if w == 0xff then error ("bad: " ++ show c) else w
 
 __ = 0xff
 table :: [Word8]
